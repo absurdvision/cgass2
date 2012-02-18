@@ -26,6 +26,10 @@ bool  myLightsOn, mySmoothShadingOn, myBackFaceCullingOn;
 
 
 /* Display is called whenever the contents of the window need 
+h yeah:q
+i:
+A
+
    to be redrawn. The contents of the window may need to be redrawn 
    when the window is initially opened, when the window is popped and
    window damage is exposed, and when glutPostRedisplay() is 

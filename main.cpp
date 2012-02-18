@@ -3,7 +3,7 @@
   visualization of objects. Objects are modeled
   and rendered in draw.c
 
-  Author: Vijay Natarajan
+  Author: Vijay Natarajan dsnnnn
 */
 
 /* includes glu and gl correctly*/
