@@ -154,6 +154,27 @@ ReadOffFile(const char *filename)
 
 
 
+void mesh_smooth_normals(Mesh *mesh)
+{
+ 	for (int i = 0; i < mesh->nfaces; i++) {
+  		Face& face = mesh->faces[i]; 
+   		poly_d +=1;
+     
+    		glNormal3fv(face.normal);
+    		
+   	 	for (int j = 0; j < face.nverts; j++) {
+   	 
+   		Vertex *vert = face.verts[j];
+   		glVertex3f(vert->x/scale, vert->y/scale, vert->z/scale);
+     
+    		}
+  	}     
+}
+
+
+
+
+
 double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta){
 
 
@@ -200,12 +221,7 @@ glBegin(GL_TRIANGLES);
     glNormal3fv(face.normal);
     for (int j = 0; j < face.nverts; j++) {
      Vertex *vert = face.verts[j];
-		
-	//enable this for per vertex coloring	
-	//float d = sqrt(vert->x/scale*vert->x/scale+vert->y/scale*vert->y/scale+vert->z/scale*vert->z/scale);
-	//float vcolor[] = { vert->x/(scale*d), vert->y/(scale*d), vert->z/(scale*d), 1.0f };
-	//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, vcolor);
-
+     
     glVertex3f(vert->x/scale, vert->y/scale, vert->z/scale);
      
     }

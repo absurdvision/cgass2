@@ -253,6 +253,9 @@ void onInit (int argc, char * argv[])
  // glEnable(GL_COLOR_MATERIAL);		//enabling color 
   //glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE); //enableing the material prop fro v=color tracking
 
+glEnableClientState(GL_VERTEX_ARRAY);
+glEnableClientState(GL_NORMAL_ARRAY);
+
 }
 
 void onDisplay ()
@@ -517,6 +520,8 @@ void onVisible (int state)
 int main (int argc, char *argv[]) 
 {
   theProgramTitle = argv[0];
+  
+  load_files();
   
    init_ai();
    
