@@ -25,6 +25,12 @@ typedef struct Mesh {
   Vertex *verts;
   int nfaces;
   Face *faces;
+  
+  GLfloat *vertx;
+  GLfloat *norms;
+  GLubyte *indx;
+  int indx_cnt;
+ 
 } Mesh;
 
 
@@ -33,6 +39,9 @@ Mesh *
 ReadOffFile(const char *filename)
 {
   int i;
+  
+  int *vt,*normcnt;
+  
 
 
   FILE *fp;
@@ -47,6 +56,7 @@ ReadOffFile(const char *filename)
     fclose(fp);
     return 0;
   }
+  mesh->indx_cnt = 0;
 
   int nverts = 0;
   int nfaces = 0;
@@ -74,6 +84,11 @@ ReadOffFile(const char *filename)
         assert(mesh->verts);
         mesh->faces = new Face [nfaces];
         assert(mesh->faces);
+        
+        normcnt = (int*)malloc(sizeof(int)*nverts);
+        mesh->norms = (float*)malloc(sizeof(float)*nverts*3);
+        mesh->indx = (GLubyte *)malloc(sizeof(GLubyte)*nfaces*3);
+        mesh->vertx = (GLfloat*)malloc(sizeof(GLfloat)*nverts*3);
       }
     }
     else if (mesh->nverts < nverts) {
@@ -84,6 +99,10 @@ ReadOffFile(const char *filename)
         fclose(fp);
         return NULL;
       }
+      mesh->vertx[3*mesh->nverts-3] = (GLfloat)vert.x;
+      mesh->vertx[3*mesh->nverts-2] =(GLfloat)vert.y;
+      mesh->vertx[3*mesh->nverts] = (GLfloat)vert.z;
+      
     }
     else if (mesh->nfaces < nfaces) {
 
@@ -102,9 +121,18 @@ ReadOffFile(const char *filename)
       assert(face.verts);
 
       // Read vertex indices for face
+      vt =  (int*)malloc(sizeof(int)*face.nverts);
+      
       for (i = 0; i < face.nverts; i++) {
         bufferp = strtok(NULL, " \t");
-        if (bufferp) face.verts[i] = &(mesh->verts[atoi(bufferp)]);
+        if (bufferp) {
+        face.verts[i] = &(mesh->verts[atoi(bufferp)]);
+        
+        vt[i] = atoi(bufferp);
+        mesh->indx[3*mesh->nfaces+i] = (GLubyte)atoi(bufferp);
+        mesh->indx_cnt++;
+        }
+        
         else {
           fprintf(stderr, "Syntax error with face on line %d in file %s\n", line_count, filename);
           fclose(fp);
@@ -128,10 +156,23 @@ ReadOffFile(const char *filename)
       squared_normal_length += face.normal[2]*face.normal[2];
       float normal_length = sqrt(squared_normal_length);
       if (normal_length > 1.0E-6) {
+      
         face.normal[0] /= normal_length;
         face.normal[1] /= normal_length;
         face.normal[2] /= normal_length;
+        
+        for(int k=0;k<face.nverts;k++){
+        
+        mesh->norms[3*vt[k]  ] +=  face.normal[0];
+        mesh->norms[3*vt[k]+1] +=  face.normal[1];
+        mesh->norms[3*vt[k]+2] +=  face.normal[2];
+        
+        normcnt[vt[k]]++;  
+        
+        }
       }
+      
+      free(vt);
     }
     else {
 
@@ -147,6 +188,7 @@ ReadOffFile(const char *filename)
 
 
   fclose(fp);
+  //free(normcnt);
 
   return mesh;
  
@@ -171,46 +213,12 @@ double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,d
   glPushMatrix();
   glTranslatef(xtrans,ytrans,ztrans);
   glRotatef(theta, 0, 1, 0);
-  
-  
- for (int i = 0; i < mesh->nfaces; i++) {
-    Face& face = mesh->faces[i]; 
-
-    for (int j = 0; j < face.nverts; j++) {
-     Vertex *vert = face.verts[j];
-		
-      if(maxz<vert->z/scale)maxz = vert->z/scale;
-      if(minz>vert->z/scale)minz = vert->z/scale;
-      
-      if(minx > vert->x/scale)minx = vert->x/scale;
-      if(maxx < vert->x/scale)maxx = vert->z/scale;
-      
-      if(miny > vert->y/scale)miny = vert->y/scale;  
-    }
-  }
-	
-	glTranslatef(-(minx+maxx)/2,-miny,-(minz+maxz)/2);
-	    
-	    
+     
+	//glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
+	//glNormalPointer(GL_FLOAT,0,mesh->norms);	    
 	     
-glBegin(GL_TRIANGLES);
-  
-  // Draw faces
- for (int i = 0; i < mesh->nfaces; i++) {
-    Face& face = mesh->faces[i]; 
-     poly_d +=1;
-     
-    glNormal3fv(face.normal);
-    for (int j = 0; j < face.nverts; j++) {
-     Vertex *vert = face.verts[j];
-     
-    glVertex3f(vert->x/scale, vert->y/scale, vert->z/scale);
-     
-    }
- 
-  }
-     
-glEnd(); 
+	//glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
+	//	GL_UNSIGNED_BYTE,mesh->indx);
   
  glPopMatrix();
  return(1);

@@ -12,7 +12,7 @@ extern double poly_d;
 
 #include <math.h>
 #include "draw.h"
-#include "offread.cpp"
+#include "conv.cpp"
 
 #ifndef PI
 #define PI 3.14159265358979323846f
@@ -113,23 +113,23 @@ void bar(double sy){
 double sx  =0.1;
 double sz = 0.1;
 	
-	GLfloat verts_t[8][3] = {{-0.5*sx,0*sy,-0.5*sz},
-				 {0.5*sx,0*sy,-0.5*sz},
-				 {0.5*sx,0*sy,0.5*sz},
-				 {-0.5*sx,0*sy,0.5*sz},
-				 {-0.5*sx,0.5*sy,-0.5*sz},
-				 {0.5*sx,0.5*sy,-0.5*sz},
-				 {0.5*sx,0.5*sy,0.5*sz},
-				 {-0.5*sx,0.5*sy,0.5*sz}};
+	GLfloat verts_t[24] = {-0.5*sx,0*sy,-0.5*sz,
+				0.5*sx,0*sy,-0.5*sz,
+				0.5*sx,0*sy,0.5*sz,
+				-0.5*sx,0*sy,0.5*sz,
+				-0.5*sx,0.5*sy,-0.5*sz,
+				0.5*sx,0.5*sy,-0.5*sz,
+				0.5*sx,0.5*sy,0.5*sz,
+				-0.5*sx,0.5*sy,0.5*sz};
 			 	
-	GLfloat norms[8][3] = { {1,1,1},
-				{1,0,1},
-				{1,1,0},
-				{1,0,1},
-				{0,0,1},
-				{1,0,0},
-				{1,1,1},
-				{1,1,1}};
+	GLfloat norms[24] = {	1,1,1,
+				1,0,1,
+				1,1,0,
+				1,0,1,
+				0,0,1,
+				1,0,0,
+				1,1,1,
+				1,1,1};
 	
 	glVertexPointer(3,GL_FLOAT,0,verts_t);
 	glNormalPointer(GL_FLOAT,0,norms);

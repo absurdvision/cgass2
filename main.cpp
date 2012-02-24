@@ -254,7 +254,7 @@ void onInit (int argc, char * argv[])
   //glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE); //enableing the material prop fro v=color tracking
 
 glEnableClientState(GL_VERTEX_ARRAY);
-glEnableClientState(GL_NORMAL_ARRAY);
+//glEnableClientState(GL_NORMAL_ARRAY);
 
 }
 
