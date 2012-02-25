@@ -21,33 +21,17 @@ extern double poly_d;
 
 
 float Humcolor[] = { 0.7f, 0.5f, 0.5f, 1.0f };
-
 float Dinocolor[] = { 0.09f, 0.04f, 0.05f, 1.0f };
-
 float offcolor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-
-
 float railcolor[] = { 0.25f, 0.2f, 0.2f, 1.0f };
 float barcolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-
 float roadcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-
 float grasscolor[] = { 0.1f, 0.3f, 0.1f, 1.0f };
-
 float blackchaircolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-
 float bluechaircolor[] = { 0.0f, 0.0f, 0.1f, 1.0f };
-
 float Treecolor[] =  { 0.1f, 0.3f, 0.1f, 1.0f };
-
-
-
 float wallcolor[] =  { 0.3f, 0.35f, 0.3f, 1.0f };
-
 float A0color[] =  { 0.7f, 0.5f, 0.3f, 1.0f };
-
-
 float B0color[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
 
 int bind;
@@ -409,15 +393,15 @@ glPopMatrix();
 
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackchaircolor);
-	//mesh_gen(Chairblack,0.3,-5,0,-6,0 );
-	//mesh_gen(Chairblack,0.3,0,0,-6,0 );	
-	//mesh_gen(Chairblack,0.3,5,0,-6,0 );	
+	mesh_gen(Chairblack,0.3,-5,0,-6,0 );
+	mesh_gen(Chairblack,0.3,0,0,-6,0 );	
+	mesh_gen(Chairblack,0.3,5,0,-6,0 );	
 	
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, bluechaircolor);
-	//mesh_gen(Chairblue,.7,-6,0,-5,-90 );
-	//mesh_gen(Chairblue,.7,-6,0,0,-90 );	
-	//mesh_gen(Chairblue,.7,-6,0,5,-90 );
+	mesh_gen(Chairblue,.7,-6,0,-5,-90 );
+	mesh_gen(Chairblue,.7,-6,0,0,-90 );	
+	mesh_gen(Chairblue,.7,-6,0,5,-90 );
 	
 	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,Treecolor);

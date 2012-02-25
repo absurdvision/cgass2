@@ -28,7 +28,7 @@ typedef struct Mesh {
   
   GLfloat *vertx;
   GLfloat *norms;
-  GLubyte *indx;
+  GLint *indx;
   int indx_cnt;
  
 } Mesh;
@@ -42,8 +42,6 @@ ReadOffFile(const char *filename)
   
   int *vt,*normcnt;
   
-
-
   FILE *fp;
   if (!(fp = fopen(filename, "r"))) {
     fprintf(stderr, "Unable to open file %s\n", filename);
@@ -86,9 +84,10 @@ ReadOffFile(const char *filename)
         assert(mesh->faces);
         
         normcnt = (int*)malloc(sizeof(int)*nverts);
-        mesh->norms = (float*)malloc(sizeof(float)*nverts*3);
-        mesh->indx = (GLubyte *)malloc(sizeof(GLubyte)*nfaces*3);
-        mesh->vertx = (GLfloat*)malloc(sizeof(GLfloat)*nverts*3);
+        for(int i =0;i<nverts;i++)normcnt[i]=0;
+        mesh->norms = (float*)malloc(sizeof(GLfloat)*nverts*3);
+        mesh->indx = (GLint*)malloc(sizeof(GLint)*nfaces*3);
+        mesh->vertx = (GLfloat*)malloc(sizeof(GLfloat)*(nverts*3));
       }
     }
     else if (mesh->nverts < nverts) {
@@ -101,7 +100,7 @@ ReadOffFile(const char *filename)
       }
       mesh->vertx[3*mesh->nverts-3] = (GLfloat)vert.x;
       mesh->vertx[3*mesh->nverts-2] =(GLfloat)vert.y;
-      mesh->vertx[3*mesh->nverts] = (GLfloat)vert.z;
+      mesh->vertx[3*mesh->nverts-1] = (GLfloat)vert.z;
       
     }
     else if (mesh->nfaces < nfaces) {
@@ -129,7 +128,7 @@ ReadOffFile(const char *filename)
         face.verts[i] = &(mesh->verts[atoi(bufferp)]);
         
         vt[i] = atoi(bufferp);
-        mesh->indx[3*mesh->nfaces+i] = (GLubyte)atoi(bufferp);
+        mesh->indx[3*mesh->nfaces-3+i] = (GLint)atoi(bufferp);
         mesh->indx_cnt++;
         }
         
@@ -164,14 +163,19 @@ ReadOffFile(const char *filename)
         for(int k=0;k<face.nverts;k++){
         
         mesh->norms[3*vt[k]  ] +=  face.normal[0];
+        normcnt[3*vt[k]]++;
         mesh->norms[3*vt[k]+1] +=  face.normal[1];
+        normcnt[3*vt[k]+1]++;
         mesh->norms[3*vt[k]+2] +=  face.normal[2];
-        
-        normcnt[vt[k]]++;  
+        normcnt[3*vt[k]+2]++;
+
         
         }
       }
+    //  for(int i=0;i<nverts;i++)mesh->norms[i] /=normcnt[i];
+   												/// have to setup the normalization of normals
       
+      //free(normcnt);
       free(vt);
     }
     else {
@@ -193,35 +197,27 @@ ReadOffFile(const char *filename)
   return mesh;
  
 }
-
-
-
-
-
-
 double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta){
-
-
 
   int i;
   double height=0;
   scale  *= 2;
+  scale = 1/scale;
   
-  double miny=10000;
-  double maxx=0,minx=100000,minz=10000,maxz=0;
-  
+
   glPushMatrix();
   glTranslatef(xtrans,ytrans,ztrans);
   glRotatef(theta, 0, 1, 0);
-     
-	//glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
-	//glNormalPointer(GL_FLOAT,0,mesh->norms);	    
-	     
-	//glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
-	//	GL_UNSIGNED_BYTE,mesh->indx);
+  glScalef(scale,scale,scale);
+   
+  glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
+  glNormalPointer(GL_FLOAT,0,mesh->norms);	   
+  glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
+                    GL_UNSIGNED_INT,mesh->indx);
   
  glPopMatrix();
  return(1);
+ 
  }
 
 

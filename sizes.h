@@ -3,4 +3,3 @@
 #define BAR_W 0.1
 
 
-#define CAGE_W 
