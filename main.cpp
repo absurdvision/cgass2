@@ -31,8 +31,8 @@ int         theWindowWidth = 700, theWindowHeight = 700;
 int         theWindowPositionX = 40, theWindowPositionY = 40;
 bool        isAnimating = false;
 bool        isFullScreen = false;
-int			wireframe = 0;
-int 		ortho=0;
+int	    wireframe = 0;
+int 	    ortho=0;
 
 
 double lx,ly,lz;	//the  location where we are looking from;
@@ -49,6 +49,8 @@ extern double lx_bind;
 extern double ly_bind;
 extern double lz_bind;
 
+GLfloat lightpos[] =  {100, 100, 25};
+int n=1;
 
 
 double view_angle;
@@ -207,19 +209,38 @@ void onInit (int argc, char * argv[])
 
   /* create light 0 and give it a position */
   GLfloat light0pos[4] = { 30, 100, 25, 0 };
+  GLfloat light1pos[4] = { 10, 20, 10, 1 };
+  GLfloat light2pos[4] = { 30, 100, 25, 0 };
+  
   glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-  /* turn light 0 on */
+  
+  glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+  
+  glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 5.f);
+  
+  glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 2.f);
+  			//spot light
+  /* turn light 0  and 1 on */
+ 
+ 
  
 
-  GLfloat diffuse[] = { 0.7f, 0.7f, 0.7f,1.0f }; 
-  GLfloat ambient[] = { 0.2f, 0.2f, 0.2f, 1.0f };
-  GLfloat specular[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+  GLfloat diffuse[] = { 0.35f, 0.35f, 0.35f,1.0f }; 
+  GLfloat ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+  GLfloat specular[] = { 0.05f, 0.05f, 0.05f, 1.0f };
   
   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse); 
   glLightfv(GL_LIGHT0, GL_AMBIENT,ambient ); 
   glLightfv(GL_LIGHT0, GL_SPECULAR,specular); 
   
+  glLightfv(GL_LIGHT1, GL_AMBIENT,ambient ); 
+  glLightfv(GL_LIGHT1, GL_SPECULAR,specular);
+  glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse); 
+  
+  
+  
  glEnable(GL_LIGHT0);
+ glEnable(GL_LIGHT1);
    /*turn lighting on */
   glEnable(GL_LIGHTING) ;
   /*turn material colors on */
@@ -256,6 +277,7 @@ void onInit (int argc, char * argv[])
 glEnableClientState(GL_VERTEX_ARRAY);
 glEnableClientState(GL_NORMAL_ARRAY);
 
+	
 }
 
 void onDisplay ()
@@ -273,7 +295,8 @@ void onDisplay ()
   /* draw entire scene into cleared window */
   glPushMatrix();
    setCamera();
-   Display();
+   Display(lightpos,n);
+   //apply_tball_pos();
   glPopMatrix();
 
   /* check for any errors when rendering */
@@ -363,7 +386,7 @@ void onMouseMotion (int x, int y)
 /* pre:  mouse is dragged (i.e., moved while button is pressed) within glut window
    post: scene is updated and re-rendered  */
 {
-  /* notify window that it has to be re-rendered */
+  //update_trackball_state(x,y);
   glutPostRedisplay();
 }
 

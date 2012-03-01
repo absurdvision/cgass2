@@ -11,8 +11,11 @@ extern double poly_d;
 #define INCPOLY poly_d += 1
 
 #include <math.h>
+#include "stdlib.h"
 #include "draw.h"
 #include "conv.cpp"
+#include "models.cpp"
+#include "textureutils.cpp"
 
 #ifndef PI
 #define PI 3.14159265358979323846f
@@ -21,16 +24,8 @@ extern double poly_d;
 
 
 float Humcolor[] = { 0.7f, 0.5f, 0.5f, 1.0f };
-float Dinocolor[] = { 0.09f, 0.04f, 0.05f, 1.0f };
+float Dinocolor[] = { 0.5f, 0.5f, 0.1f, 1.0f };
 float offcolor[] = { 0.5f, 0.5f, 0.5f, 1.0f };
-float railcolor[] = { 0.25f, 0.2f, 0.2f, 1.0f };
-float barcolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-float roadcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-float grasscolor[] = { 0.1f, 0.3f, 0.1f, 1.0f };
-float blackchaircolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
-float bluechaircolor[] = { 0.0f, 0.0f, 0.1f, 1.0f };
-float Treecolor[] =  { 0.1f, 0.3f, 0.1f, 1.0f };
-float wallcolor[] =  { 0.3f, 0.35f, 0.3f, 1.0f };
 float A0color[] =  { 0.7f, 0.5f, 0.3f, 1.0f };
 float B0color[] =  { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -90,500 +85,68 @@ double ellip_b[3];
 
 unsigned long int switch_theta = 0;
 
+GLuint m_texname[1];
+
+image *road_tex;
+
+void Display(GLfloat *c,int n){	
 
 
-void bar(double sy){
-
-double sx  =0.1;
-double sz = 0.1;
+	glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &m_texname[0]);
 	
-	GLfloat verts_t[24] = {-0.5*sx,0*sy,-0.5*sz,
-				0.5*sx,0*sy,-0.5*sz,
-				0.5*sx,0*sy,0.5*sz,
-				-0.5*sx,0*sy,0.5*sz,
-				-0.5*sx,0.5*sy,-0.5*sz,
-				0.5*sx,0.5*sy,-0.5*sz,
-				0.5*sx,0.5*sy,0.5*sz,
-				-0.5*sx,0.5*sy,0.5*sz};
-			 	
-	GLfloat norms[24] = {	1,1,1,
-				1,0,1,
-				1,1,0,
-				1,0,1,
-				0,0,1,
-				1,0,0,
-				1,1,1,
-				1,1,1};
-	
-	glVertexPointer(3,GL_FLOAT,0,verts_t);
-	glNormalPointer(GL_FLOAT,0,norms);
-		
-		 	 
-	GLubyte indices_t[24]  = {0,1,5,4
-				,1,2,6,5
-				,2,3,7,6
-				,7,3,0,4
-				,1,0,3,2
-				,4,5,6,7}; 	
-
-	glDrawElements(GL_QUADS,24,GL_UNSIGNED_BYTE,indices_t);
-
-		
-}
-
- void tile_gen(double x, double z,float rail){
-
-
-	rail = rail/2;
-	
-	glPushMatrix();
-	
-	glTranslatef(x,0,z);
-		
+        glBindTexture(GL_TEXTURE_2D, m_texname[0]);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_REPLACE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA,road_tex->height,road_tex->width, 0, GL_RGBA,
+	GL_UNSIGNED_BYTE,road_tex->data);
+	glDisable(GL_TEXTURE_2D);
 	
 	
-	glBegin(GL_QUADS);
-	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grasscolor);
-	glNormal3f(0, 1, 0);								//making the area inside cage
-	glVertex3f(-8,0,-8);
-	glVertex3f(-8,0,8);
-	glVertex3f(8,0,8);
-	glVertex3f(8,0,-8);
-		
-											//makinh the border of the cage	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, roadcolor);
-	glVertex3f(-10,0,-10);	
-	glVertex3f(-10,0,10);		
-	glVertex3f(-8,0,10);
-	glVertex3f(-8,0,-10);
-
-	glVertex3f(8,0,-10);	
-	glVertex3f(8,0,10);
-	glVertex3f(10,0,10);
-	glVertex3f(10,0,-10);
-
-	glVertex3f(-8,0,-10);
-	glVertex3f(-8,0,-8);
-	glVertex3f(8,0,-8);
-	glVertex3f(8,0,-10);
-	
-	glVertex3f(-8,0,8);
-	glVertex3f(-8,0,10);
-	glVertex3f(8,0,10);
-	glVertex3f(8,0,8);
-	
-	glEnd();
-
-	
-	if(rail){	
-		
-	//glColor3fv(railcolor);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, railcolor);
-	int i,j;
-	GLUquadricObj *quadric;
-	quadric = gluNewQuadric();
-	
-	glPushMatrix();
-	glTranslatef(-8,0,-8);
-	for(i = 0;i<67;i++){
-	
-		glPushMatrix();
-		glTranslatef(0,0,i/4);
-		bar(6);
-		glPopMatrix();
-		
-		glPushMatrix();
-		glTranslatef(i/4,0,0);
-		bar(6);
-		glPopMatrix();	
-				
-	}
-	glPopMatrix();
-	
-	
-	glPushMatrix();
-	glTranslatef(8,0,8);
-	for(i = 0;i<67;i++){	
-		glPushMatrix();
-		glTranslatef(0,0,-i/4);
-		bar(6);
-		glPopMatrix();
-		
-		glPushMatrix();
-		glTranslatef(-i/4,0,0);
-		bar(6);
-		glPopMatrix();	
-	}
-	
-	//making the structurer above the rails
-		
-	glBegin(GL_QUADS);
-	
-	glNormal3f(1,0,0);
-	glVertex3f(.1,3,0);
-	glVertex3f(.1,4,0);		
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-		
-	glNormal3f(-1,0,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(-.1,4,-16);
-	glVertex3f(-.1,3,-16);
-		
-	glNormal3f(0,-1,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(.1,3,0);		//vert
-	glVertex3f(.1,3,-16);
-	glVertex3f(-.1,3,-16);
-
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(.1,4,0);
-	glVertex3f(.1,3,0);
-
-	glNormal3f(0,1,0);
-	glVertex3f(-.1,4,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(-.1,4,-16);
-	
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,-16);
-	glVertex3f(-.1,4,-16);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	glEnd();
-	
-		
-	glTranslatef(-16,0,0);	
-	glBegin(GL_QUADS);
-		
-	glNormal3f(1,0,0);
-	glVertex3f(.1,3,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	
-	glNormal3f(-1,0,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(-.1,4,-16);
-	glVertex3f(-.1,3,-16);
-
-	glNormal3f(0,-1,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(.1,3,0);		//vert
-	glVertex3f(.1,3,-16);
-	glVertex3f(-.1,3,-16);
-
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(.1,4,0);
-	glVertex3f(.1,3,0);
-	
-	glNormal3f(0,1,0);
-	glVertex3f(-.1,4,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(-.1,4,-16);
-	
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,-16);
-	glVertex3f(-.1,4,-16);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	glEnd();
-		
-		
-	glRotatef(-90,0,1,0);		
-	glBegin(GL_QUADS);
-
-	glNormal3f(1,0,0);
-	glVertex3f(.1,3,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	
-	glNormal3f(-1,0,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(-.1,4,-16);
-	glVertex3f(-.1,3,-16);
-
-	glNormal3f(0,-1,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(.1,3,0);		//vert
-	glVertex3f(.1,3,-16);
-	glVertex3f(-.1,3,-16);
-
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(.1,4,0);
-	glVertex3f(.1,3,0);
-
-	glNormal3f(0,1,0);
-	glVertex3f(-.1,4,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(-.1,4,-16);
-	
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,-16);
-	glVertex3f(-.1,4,-16);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	glEnd();
-		
-	
-	glTranslatef(-16,0,0);	
-	glBegin(GL_QUADS);
-
-	glNormal3f(1,0,0);
-	glVertex3f(.1,3,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	
-	glNormal3f(-1,0,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(-.1,4,-16);
-	glVertex3f(-.1,3,-16);
-
-	glNormal3f(0,-1,0);
-	glVertex3f(-.1,3,0);
-	glVertex3f(.1,3,0);		//vert
-	glVertex3f(.1,3,-16);
-	glVertex3f(-.1,3,-16);
-	
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,0);
-	glVertex3f(-.1,4,0);		//vert
-	glVertex3f(.1,4,0);
-	glVertex3f(.1,3,0);
-	
-	glNormal3f(0,1,0);
-	glVertex3f(-.1,4,0);
-	glVertex3f(.1,4,0);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(-.1,4,-16);
-		
-	glNormal3f(0,0,1);
-	glVertex3f(-.1,3,-16);
-	glVertex3f(-.1,4,-16);		//vert
-	glVertex3f(.1,4,-16);
-	glVertex3f(.1,3,-16);
-	glEnd();
-		
-	glPopMatrix();	
-	}
-glPopMatrix();
-}
-
- void tile_gen_free(double x, double z,Mesh* m){
-
-	glPushMatrix();
-	glTranslatef(x,0,z);
-	tile_gen(0,0,0);//not
-
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackchaircolor);
-	mesh_gen(Chairblack,0.3,-5,0,-6,0 );
-	mesh_gen(Chairblack,0.3,0,0,-6,0 );	
-	mesh_gen(Chairblack,0.3,5,0,-6,0 );	
-	
-
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, bluechaircolor);
-	mesh_gen(Chairblue,.7,-6,0,-5,-90 );
-	mesh_gen(Chairblue,.7,-6,0,0,-90 );	
-	mesh_gen(Chairblue,.7,-6,0,5,-90 );
-	
-	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,Treecolor);
-	glColor3fv(Treecolor);
-	mesh_gen(m,0.05,0,0,0,0 );
-	
-	glPopMatrix();
-	
-}
-
- void make_wall(){
-	
-	glPushMatrix();
-	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, wallcolor);
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(-1, 0, 0);
-	glVertex3f(14,0,13);
-	glVertex3f(14,3,13);
-	glVertex3f(14,3,-74);
-	glVertex3f(14,0,-74);
-	glEnd();
-	
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(1, 0, 0);
-	glVertex3f(14.5,0,13);
-	glVertex3f(14.5,3,13);
-	glVertex3f(14.5,3,-74);
-	glVertex3f(14.5,0,-74);
-	glEnd();
-	
-	
-	glColor3f(0.1,.1,0.1);
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(1, 0, 0);
-	glVertex3f(-92,0,13);
-	glVertex3f(-92,3,13);
-	glVertex3f(-92,3,-74);
-	glVertex3f(-92,0,-74);
-	glEnd();
-	
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(-1, 0, 0);
-	glVertex3f(-92.5,0,13);
-	glVertex3f(-92.5,3,13);
-	glVertex3f(-92.5,3,-74);
-	glVertex3f(-92.5,0,-74);
-	glEnd();
-	
-	
-	glColor3f(0.1,.1,0.1);
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(0, 0, -1);
-	glVertex3f(14.5,0,13);
-	glVertex3f(14.5,3,13);
-	glVertex3f(-92.5,3,13);
-	glVertex3f(-92.5,0,13);
-	glEnd();
-	
-	glColor3f(0.1,.1,0.1);
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(0, 0, 1);
-	glVertex3f(13.5,0,13.5);
-	glVertex3f(13.5,3,13.5);
-	glVertex3f(-92.5,3,13.5);
-	glVertex3f(-92.5,0,13.5);
-	glEnd();
-	
-	
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(0, 0, 1);
-	glVertex3f(14.5,0,-74);
-	glVertex3f(14.5,3,-74);
-	glVertex3f(-92.5,3,-74);
-	glVertex3f(-92.5,0,-74);
-	glEnd();
-	
-	glBegin(GL_POLYGON);	//generating the axes
-	INCPOLY;
-	glNormal3f(0, 0, -1);
-	glVertex3f(14.5,0,-74.5);
-	glVertex3f(14.5,3,-74.5);
-	glVertex3f(-92.5,3,-74.5);
-	glVertex3f(-92.5,0,-74.5);
-	glEnd();
-	
-	
-	glPopMatrix();
-	}
-
- void Display(){	
 			
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grasscolor);
+	
+	create_background(Tree,Chairblack,Chairblue,c,n);
 
-	
-	int i,j;
-	glBegin(GL_POLYGON);	//generating the ground and sky
-	INCPOLY;
-	glNormal3f(0, 1, 0);
-	glVertex3f(-5000,-0.1,-5000);
-	glVertex3f(-5000, -0.1,5000);
-	glVertex3f(5000, -0.1,5000);
-	glVertex3f(5000, -0.1,-5000);
-	glEnd();
-	
-	make_wall();
-	
-	tile_gen_free(-10,-10,Tree);
-	
-	
-	tile_gen(-30,-10,5);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
-	//mesh_gen(A[1],0.1,-30+Ax[1],0,-10+Az[1],Atheta[1]*Atmode[1] );		//dino
+	mesh_gen(A[1],0.1,-30+Ax[1],0,-10+Az[1],Atheta[1]*Atmode[1],c,n );		//dino
 	
-	tile_gen(-50,-10,5);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, A0color);
-	//mesh_gen(A[0],0.1,-50+Ax[2],0,-10+Az[2],Atheta[2]*Atmode[2] );
+	mesh_gen(A[0],0.1,-50+Ax[2],0,-10+Az[2],Atheta[2]*Atmode[2],c,n );
 	
-	
-	tile_gen_free(-70,-10,Tree)	;
-	
-	
-	tile_gen(-10,-30,5);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
-	//mesh_gen(A[2],0.05,-10+Ax[0],0,-30+Az[0],Atheta[0]*Atmode[0] );	
-	
-	tile_gen(-30,-30,0); //not
+	mesh_gen(A[2],0.05,-10+Ax[0],0,-30+Az[0],Atheta[0]*Atmode[0],c,n );	
+
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offcolor);
-	//mesh_gen(Office,0.035,-31,0,-30,0 );									//office
+	mesh_gen(Office,0.035,-31,0,-30,0,c,n );									//office
 	
-	
-	tile_gen_free(-50,-30,Tree);//not
-
-		
-	tile_gen(-70,-30,5);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, A0color);
-	//mesh_gen(A[3],0.1,-70+Ax[3],0,-30+Az[3],Atheta[3]*Atmode[3] );	
-	
-	
-	
-	tile_gen_free(-10,-50,Tree);//not
-	
-	
-	tile_gen(-30,-50,5);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
-	//mesh_gen(A[4],0.1,-30+Ax[1],0,-50+Az[1],Atheta[1]*Atmode[1] );	
-	
-	tile_gen(-50,-50,5);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
-	//mesh_gen(A[5],0.1,-50+Ax[2],0,-50+Az[2],Atheta[2]*Atmode[2] );
-		
-	tile_gen_free(-70,-50,Tree);//not
-	glColor3f(0.8,.8,0.8);
-	//mesh_gen(A[0],0.4,-70+Ax[3],0,-50+Az[3],Atheta[3]*Atmode[3] );	
-	
-//	
-//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,Humcolor);
-//	/*for(i=0;i<10;i++)
-//		switch(Hmode[i]){
-//			
-//		case -1 : //mesh_gen(H[i],.5,Hx[i],0,Hz[i],-180);break;
-//		case -2 : //mesh_gen(H[i],.5,Hx[i],0,Hz[i], 180);break;
-//		case 1 : //mesh_gen(H[i],.5,Hx[i],0,Hz[i],-90);break;
-//		case 2 : //mesh_gen(H[i],.5,Hx[i],0,Hz[i],90);break;
+	mesh_gen(A[3],0.1,-70+Ax[3],0,-30+Az[3],Atheta[3]*Atmode[3],c,n );	
 
-//	
-//		}
-//	
-//	for(i=0;i<3;i++){
-//		
-//		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,B0color);
-//		//mesh_gen(B[i],.1,ellip_a[i]*cos(ellip_t[i])-40,20,ellip_a[i]*sin(ellip_t[i])-30,0);
-//	}	
-//	*/
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
+	mesh_gen(A[4],0.1,-30+Ax[1],0,-50+Az[1],Atheta[1]*Atmode[1],c,n );	
+
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
+	mesh_gen(A[5],0.1,-50+Ax[2],0,-50+Az[2],Atheta[2]*Atmode[2],c,n );
+		
+	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, A0color);
+	mesh_gen(A[0],0.4,-70+Ax[3],0,-50+Az[3],Atheta[3]*Atmode[3],c,n );	
 	
+	
+	
+	for(int i=0;i<10;i++){
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,Humcolor);
+		mesh_gen(H[i],.5,Hx[i],0,Hz[i],0,c,n);
+	 }
+	
+	for(int i=0;i<3;i++){
+		
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,B0color);
+		mesh_gen(B[i],.1,ellip_a[i]*cos(ellip_t[i])-40,20,ellip_a[i]*sin(ellip_t[i])-30,0,c,n);
+	}		
 } 
 
 void load_files(){
@@ -624,6 +187,12 @@ void load_files(){
 	B[1]=ReadOffFile("../birds/m37.off");
 	B[2]=ReadOffFile("../birds/m39.off");
 	
+	
+	
+	road_tex = text2img("../texture/tiles_cross_motif_4142308_341x256.txt",64,64);
+	
+
+		
 	}
 
 void init_ai(){
@@ -731,8 +300,9 @@ void init_ai(){
   ellip_b[1] = -50;
   ellip_b[2] = -30;
   
+  int_shadow();
   
-   
+
 	
 }
 

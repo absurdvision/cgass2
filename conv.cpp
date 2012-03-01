@@ -7,6 +7,9 @@
 
 extern double poly_d;
 
+GLfloat colshad[4];
+GLfloat msh[16];
+
 
 typedef struct Vertex {
   float x, y, z;
@@ -193,11 +196,26 @@ ReadOffFile(const char *filename)
 
   fclose(fp);
   //free(normcnt);
-
+  
   return mesh;
  
 }
-double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta){
+
+void int_shadow(){
+
+	int i;
+	for(i=0;i<15;i++)msh[i] = 0.0;
+	msh[0]=msh[5]=msh[10]=1.0;
+	
+	colshad[1]=0;
+	colshad[2]=0;
+	colshad[3]=0;
+	colshad[4]=0.5;
+	
+		
+}
+
+double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta,float *x,int n){
 
   int i;
   double height=0;
@@ -214,6 +232,41 @@ double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,d
   glNormalPointer(GL_FLOAT,0,mesh->norms);	   
   glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
                     GL_UNSIGNED_INT,mesh->indx);
+  
+  
+  glMatrixMode(GL_MODELVIEW);
+  
+  if(x==NULL||n<=0){
+  glPopMatrix();
+  return(1);
+ 
+  }
+  
+  for(i=0;i<n;i++){
+         
+  	glPushMatrix();
+  	
+  	glScalef(1/scale,1/scale,1/scale);
+  	glRotatef(-theta, 0, 1, 0);
+  	glTranslatef(-xtrans,-ytrans,-ztrans);
+  	
+  	msh[7] = -1/x[3*i+1];
+  	glTranslatef(x[3*i],x[3*i+1],x[3*i+2]);
+  	glMultMatrixf(msh);
+  	glTranslatef(-x[3*i],-x[3*i+1],-x[3*i+2]);
+  	
+  	glTranslatef(xtrans,ytrans,ztrans);
+        glRotatef(theta, 0, 1, 0);
+        glScalef(scale,scale,scale);
+        
+  	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
+  	glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
+        glNormalPointer(GL_FLOAT,0,mesh->norms);	   
+        glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
+                    GL_UNSIGNED_INT,mesh->indx);
+        glPopMatrix();
+   }
+  	
   
  glPopMatrix();
  return(1);
