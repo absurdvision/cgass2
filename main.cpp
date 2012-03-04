@@ -49,7 +49,13 @@ extern double lx_bind;
 extern double ly_bind;
 extern double lz_bind;
 
-GLfloat lightpos[] =  {100, 100, 25};
+GLfloat lightpos[] =  {1};
+GLfloat light0pos[] = { -30, 60, -30, 1 }; //point source
+GLfloat light1pos[] = { -30, 100, -30, 1 };   //spot 
+GLfloat light2pos[] = { 0, 1, 0, 0 };
+
+GLfloat spotangle = 5;
+
 int n=1;
 
 
@@ -208,24 +214,22 @@ void onInit (int argc, char * argv[])
   glEnable(GL_DEPTH_TEST); 
 
   /* create light 0 and give it a position */
-  GLfloat light0pos[4] = { 30, 100, 25, 0 };
-  GLfloat light1pos[4] = { 10, 20, 10, 1 };
-  GLfloat light2pos[4] = { 30, 100, 25, 0 };
   
-  glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
   
-  glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+  //glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
   
-  glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, 5.f);
+  //glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
   
-  glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 2.f);
+  //glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, spotangle);
+  
+  //glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 1.f);
   			//spot light
   /* turn light 0  and 1 on */
  
  
  
 
-  GLfloat diffuse[] = { 0.35f, 0.35f, 0.35f,1.0f }; 
+  GLfloat diffuse[] = { 0.9f, 0.9f, 0.9f,1.0f }; 
   GLfloat ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
   GLfloat specular[] = { 0.05f, 0.05f, 0.05f, 1.0f };
   
@@ -237,12 +241,16 @@ void onInit (int argc, char * argv[])
   glLightfv(GL_LIGHT1, GL_SPECULAR,specular);
   glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse); 
   
+  glLightfv(GL_LIGHT2, GL_AMBIENT,ambient ); 
+  glLightfv(GL_LIGHT2, GL_SPECULAR,specular);
+  glLightfv(GL_LIGHT2, GL_DIFFUSE, diffuse); 
   
   
- glEnable(GL_LIGHT0);
- glEnable(GL_LIGHT1);
+  
+ //glEnable(GL_LIGHT0);
+ //glEnable(GL_LIGHT1);
    /*turn lighting on */
-  glEnable(GL_LIGHTING) ;
+ // glEnable(GL_LIGHTING) ;
   /*turn material colors on */
   //glEnable(GL_COLOR_MATERIAL);
   /*turn back face culling off */
@@ -295,7 +303,8 @@ void onDisplay ()
   /* draw entire scene into cleared window */
   glPushMatrix();
    setCamera();
-   Display(lightpos,n);
+   disp();
+   //Display(light0pos,n);
    //apply_tball_pos();
   glPopMatrix();
 

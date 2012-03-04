@@ -48,7 +48,9 @@ double sz = 0.1;
 		
 }
 
-void tile_gen(double x, double z,float rail){
+
+
+void tile_gen(double x, double z,float rail,int n){
 
 
 	rail = rail/2;
@@ -58,51 +60,53 @@ void tile_gen(double x, double z,float rail){
 	glTranslatef(x,0,z);
 	
 	glPushMatrix();
-	
-	glEnable(GL_TEXTURE_2D);
-
-         glShadeModel(GL_FLAT); 
-        glBindTexture(GL_TEXTURE_2D,m_texname[0]); 
-        
+if(n){
 	glBegin(GL_QUADS);       
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grasscolor);
 	
 	glNormal3f(0, 1, 0);								//making the area inside cage
-	glTexCoord2f(0.0, 0.0);glVertex3f(-8,-0.01,-8);
-	glTexCoord2f(0.0, 1.0);glVertex3f(-8,-0.01,8);
-	glTexCoord2f(1.0, 1.0);glVertex3f(8,-0.01,8);
-	glTexCoord2f(1.0, 0.0);glVertex3f(8,-0.01,-8);
+	glVertex3f(-8,-0.01,-8);
+	glVertex3f(-8,-0.01,8);
+	glVertex3f(8,-0.01,8);
+	glVertex3f(8,-0.01,-8);
 	glEnd();
+	}
 	
-	glDisable(GL_TEXTURE_2D);
 	
 	glPopMatrix();
+if(n){	
 	
+	glEnable(GL_TEXTURE_2D);
+        //glShadeModel(GL_FLAT); 
+        glBindTexture(GL_TEXTURE_2D,m_texname[0]); 
 		
 	glBegin(GL_QUADS);										//makinh the border of the cage	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, roadcolor);
-	glVertex3f(-10,-0.01,-10);	
-	glVertex3f(-10,-0.01,10);		
-	glVertex3f(-8,-0.01,10);
-	glVertex3f(-8,-0.01,-10);
+	glTexCoord2f(0.0, 0.0);glVertex3f(-10,-0.01,-10);	
+	glTexCoord2f(0.0, 100.0);glVertex3f(-10,-0.01,10);		
+	glTexCoord2f(5.0, 100.0);glVertex3f(-8,-0.01,10);
+	glTexCoord2f(5.0, 0.0);glVertex3f(-8,-0.01,-10);
 
-	glVertex3f(8,-0.01,-10);	
-	glVertex3f(8,-0.01,10);
-	glVertex3f(10,-0.01,10);
-	glVertex3f(10,-0.01,-10);
+	glTexCoord2f(0.0, 0.0);glVertex3f(8,-0.01,-10);	
+	glTexCoord2f(0.0, 100.0);glVertex3f(8,-0.01,10);
+	glTexCoord2f(5.0, 100.0);glVertex3f(10,-0.01,10);
+	glTexCoord2f(5.0, 0.0);glVertex3f(10,-0.01,-10);
 
-	glVertex3f(-8,-0.01,-10);
-	glVertex3f(-8,-0.01,-8);
-	glVertex3f(8,-0.01,-8);
-	glVertex3f(8,-0.01,-10);
+	glTexCoord2f(0.0, 0.0);glVertex3f(-8,-0.01,-10);
+	glTexCoord2f(0.0, 5.0);glVertex3f(-8,-0.01,-8);
+	glTexCoord2f(100.0, 5.0);glVertex3f(8,-0.01,-8);
+	glTexCoord2f(100.0, 0.0);glVertex3f(8,-0.01,-10);
 	
-	glVertex3f(-8,-0.01,8);
-	glVertex3f(-8,-0.01,10);
-	glVertex3f(8,-0.01,10);
-	glVertex3f(8,-0.01,8);
+	glTexCoord2f(0.0, 0.0);glVertex3f(-8,-0.01,8);
+	glTexCoord2f(0.0, 5.0);glVertex3f(-8,-0.01,10);
+	glTexCoord2f(100.0, 5.0);glVertex3f(8,-0.01,10);
+	glTexCoord2f(100.0, 0.0);glVertex3f(8,-0.01,8);
 	
 	glEnd();
-
+         
+        glDisable(GL_TEXTURE_2D);
+        
+        }
 	
 	if(rail){	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, barcolor);
@@ -315,23 +319,25 @@ void tile_gen_free(double x, double z,Mesh* m,Mesh *Chairblack,Mesh *Chairblue,G
 
 	glPushMatrix();
 	glTranslatef(x,0,z);
-	tile_gen(0,0,0);//not
+	tile_gen(0,0,0,n);//not
 
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackchaircolor);
+	if(n)glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, blackchaircolor);
+	else glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,colshad);
 	mesh_gen(Chairblack,0.3,-5,0,-6,0,c,n);
 	mesh_gen(Chairblack,0.3,0,0,-6,0,c,n );	
 	mesh_gen(Chairblack,0.3,5,0,-6,0,c,n );	
 	
 
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, bluechaircolor);
+	if(n) glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, bluechaircolor);
+	else glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,colshad);
 	mesh_gen(Chairblue,.7,-6,0,-5,-90,c,n );
 	mesh_gen(Chairblue,.7,-6,0,0,-90,c,n );	
 	mesh_gen(Chairblue,.7,-6,0,5,-90,c,n );
 	
 	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,Treecolor);
-	glColor3fv(Treecolor);
+	if(n) glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,Treecolor);
+	else glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,colshad);
 	mesh_gen(m,0.05,0,0,0,0,c,n );
 	
 	glPopMatrix();
@@ -339,11 +345,12 @@ void tile_gen_free(double x, double z,Mesh* m,Mesh *Chairblack,Mesh *Chairblue,G
 }
 
 
-void make_wall(){
+void make_wall(int n){
 	
 	glPushMatrix();
 	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, wallcolor);
+	if(n)glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, wallcolor);
+	else glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, colshad);
 	glBegin(GL_POLYGON);	//generating the axes
 	INCPOLY;
 	glNormal3f(-1, 0, 0);
@@ -427,13 +434,9 @@ void make_wall(){
 	}
 
 
-
-
-
-
 void create_background(Mesh *Tree,Mesh *Chairblack,Mesh *Chairblue,GLfloat *c,int n)
 {
-	
+if(n){	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grasscolor);
 
 	glBegin(GL_POLYGON);	//generating the ground 
@@ -443,19 +446,19 @@ void create_background(Mesh *Tree,Mesh *Chairblack,Mesh *Chairblue,GLfloat *c,in
 	glVertex3f(5000, -0.1,5000);
 	glVertex3f(5000, -0.1,-5000);
 	glEnd();
-
-	make_wall();
+}
+	make_wall(n);
 	tile_gen_free(-10,-10,Tree,Chairblack,Chairblue,c,n);
-	tile_gen(-30,-10,5);
-	tile_gen(-50,-10,5);
+	tile_gen(-30,-10,5,n);
+	tile_gen(-50,-10,5,n);
 	tile_gen_free(-70,-10,Tree,Chairblack,Chairblue,c,n);
-	tile_gen(-10,-30,5);
-	tile_gen(-30,-30,0);
+	tile_gen(-10,-30,5,n);
+	tile_gen(-30,-30,0,n);
 	tile_gen_free(-50,-30,Tree,Chairblack,Chairblue,c,n);
-	tile_gen(-70,-30,5);
+	tile_gen(-70,-30,5,n);
 	tile_gen_free(-10,-50,Tree,Chairblack,Chairblue,c,n);
-	tile_gen(-30,-50,5);
-	tile_gen(-50,-50,5);
+	tile_gen(-30,-50,5,n);
+	tile_gen(-50,-50,5,n);
 	tile_gen_free(-70,-50,Tree,Chairblack,Chairblue,c,n);
 		
 }

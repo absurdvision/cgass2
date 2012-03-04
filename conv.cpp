@@ -5,10 +5,16 @@
 #include <ctype.h>
 #include <assert.h>
 
+
+extern GLfloat light0pos[];
+extern GLfloat light1pos[];
+extern GLfloat light2pos[];
+extern GLfloat spotangle;
+
 extern double poly_d;
 
-GLfloat colshad[4];
-GLfloat msh[16];
+extern GLfloat colshad[];
+extern GLfloat msh[];
 
 
 typedef struct Vertex {
@@ -33,6 +39,8 @@ typedef struct Mesh {
   GLfloat *norms;
   GLint *indx;
   int indx_cnt;
+  
+  GLfloat bbox[6];
  
 } Mesh;
 
@@ -175,7 +183,28 @@ ReadOffFile(const char *filename)
         
         }
       }
-    //  for(int i=0;i<nverts;i++)mesh->norms[i] /=normcnt[i];
+     //for(int i=0;i<nverts;i++)mesh->norms[i] /=normcnt[i];
+    
+//     GLfloat mx,my,mz,max,may,maz;	
+//     my=mx=mz=100000;
+//     max=may=maz=0;
+//     
+//     for(int i=0;i<nverts*3;i+=3)
+//     {
+//     	if(my>mesh->vertx[i+1])my=mesh->vertx[i+1];
+//     	if(mx>mesh->vertx[i])mx=mesh->vertx[i];
+//     	if(mz>mesh->vertx[i+2])mz=mesh->vertx[i+2];
+//     	if(may<mesh->vertx[i+1])may=mesh->vertx[i+1];
+//     	if(max<mesh->vertx[i])max=mesh->vertx[i];
+//     	if(maz<mesh->vertx[i+2])maz=mesh->vertx[i+2];
+//     }
+//     	
+//	mesh->bbox[0] = mx;  
+//	mesh->bbox[1] = my;
+//	mesh->bbox[2] = mz; 
+//	mesh->bbox[3] = max;  
+//	mesh->bbox[4] = may;
+//	mesh->bbox[5] = maz; 
    												/// have to setup the normalization of normals
       
       //free(normcnt);
@@ -202,15 +231,17 @@ ReadOffFile(const char *filename)
 }
 
 void int_shadow(){
-
+	
+	
 	int i;
 	for(i=0;i<15;i++)msh[i] = 0.0;
 	msh[0]=msh[5]=msh[10]=1.0;
 	
+	
 	colshad[1]=0;
 	colshad[2]=0;
 	colshad[3]=0;
-	colshad[4]=0.5;
+	colshad[4]=1;
 	
 		
 }
@@ -222,19 +253,19 @@ double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,d
   scale  *= 2;
   scale = 1/scale;
   
+if(!n) glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
 
   glPushMatrix();
   glTranslatef(xtrans,ytrans,ztrans);
   glRotatef(theta, 0, 1, 0);
   glScalef(scale,scale,scale);
-   
+  
+  //glTranslatef(0,-mesh->bbox[1],0);
   glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
   glNormalPointer(GL_FLOAT,0,mesh->norms);	   
   glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
                     GL_UNSIGNED_INT,mesh->indx);
-  
-  
-  glMatrixMode(GL_MODELVIEW);
+ 
   
   if(x==NULL||n<=0){
   glPopMatrix();
@@ -242,33 +273,65 @@ double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,d
  
   }
   
-  for(i=0;i<n;i++){
-         
-  	glPushMatrix();
-  	
-  	glScalef(1/scale,1/scale,1/scale);
-  	glRotatef(-theta, 0, 1, 0);
-  	glTranslatef(-xtrans,-ytrans,-ztrans);
-  	
-  	msh[7] = -1/x[3*i+1];
-  	glTranslatef(x[3*i],x[3*i+1],x[3*i+2]);
-  	glMultMatrixf(msh);
-  	glTranslatef(-x[3*i],-x[3*i+1],-x[3*i+2]);
-  	
-  	glTranslatef(xtrans,ytrans,ztrans);
-        glRotatef(theta, 0, 1, 0);
-        glScalef(scale,scale,scale);
+//        //doing for point source 
+//  	glPushMatrix();
+//  	
+//  	glTranslatef(0,mesh->bbox[1],0);
+//  	glScalef(1/scale,1/scale,1/scale);
+//  	glRotatef(-theta, 0, 1, 0);
+//  	glTranslatef(-xtrans,-ytrans,-ztrans);
+//  	
+//  	msh[7] = -1/light0pos[1];
+//  	glTranslatef(light0pos[0],light0pos[1],light0pos[2]);
+//  	glMultMatrixf(msh);
+//  	glTranslatef(-light0pos[0],-light0pos[1],-light0pos[2]);
+//  	
+//  	glTranslatef(xtrans,ytrans,ztrans);
+//        glRotatef(theta, 0, 1, 0);
+//        glScalef(scale,scale,scale);
+//        glTranslatef(0,-mesh->bbox[1],0);
+//        
+//  	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
+//  	
+//  	glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
+//        glNormalPointer(GL_FLOAT,0,mesh->norms);	   
+//        glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
+//                    GL_UNSIGNED_INT,mesh->indx);
+//        glPopMatrix();
         
-  	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
-  	glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
-        glNormalPointer(GL_FLOAT,0,mesh->norms);	   
-        glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
-                    GL_UNSIGNED_INT,mesh->indx);
-        glPopMatrix();
-   }
-  	
+        
+        
+//         shadow for spot light
+//        
+//        glPushMatrix();
+//  	glTranslatef(0,mesh->bbox[1],0);
+//  	glScalef(1/scale,1/scale,1/scale);
+//  	glRotatef(-theta, 0, 1, 0);
+//  	glTranslatef(-xtrans,-ytrans,-ztrans);
+//  	
+//  	msh[7] = -1/light1pos[1];
+//  	glTranslatef(light1pos[0],light1pos[1],light1pos[2]);
+//  	glMultMatrixf(msh);
+//  	glTranslatef(-light1pos[0],-light1pos[1],-light1pos[2]);
+//  	
+//  	glTranslatef(xtrans,ytrans,ztrans);
+//        glRotatef(theta, 0, 1, 0);
+//        glScalef(scale,scale,scale);
+//        glTranslatef(0,-mesh->bbox[1],0);
+//        
+//  	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
+//  	
+//  	glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
+//        glNormalPointer(GL_FLOAT,0,mesh->norms);	   
+//        glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
+//                    GL_UNSIGNED_INT,mesh->indx);
+//        glPopMatrix();
+//        
+// 
   
- glPopMatrix();
+  
+  
+ glPopMatrix(); 
  return(1);
  
  }

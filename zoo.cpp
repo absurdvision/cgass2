@@ -21,6 +21,9 @@ extern double poly_d;
 #define PI 3.14159265358979323846f
 #endif
 
+GLfloat msh[16];
+GLfloat colshad[4];
+
 
 
 float Humcolor[] = { 0.7f, 0.5f, 0.5f, 1.0f };
@@ -89,9 +92,11 @@ GLuint m_texname[1];
 
 image *road_tex;
 
+
+
 void Display(GLfloat *c,int n){	
 
-
+if(n){
 	glEnable(GL_TEXTURE_2D);
 	glGenTextures(1, &m_texname[0]);
 	
@@ -105,7 +110,7 @@ void Display(GLfloat *c,int n){
 	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA,road_tex->height,road_tex->width, 0, GL_RGBA,
 	GL_UNSIGNED_BYTE,road_tex->data);
 	glDisable(GL_TEXTURE_2D);
-	
+}	
 	
 			
 	
@@ -189,11 +194,95 @@ void load_files(){
 	
 	
 	
-	road_tex = text2img("../texture/tiles_cross_motif_4142308_341x256.txt",64,64);
+	road_tex = text2img("../texture/concrete_bricks_170756_341x256.txt",64,64);
 	
 
 		
 	}
+	
+	
+void disp()
+{
+
+glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
+  
+glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
+
+glLightfv(GL_LIGHT2, GL_POSITION, light2pos);
+
+
+ 
+glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, spotangle);
+  
+glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 1.f);
+
+//glEnable(GL_LIGHT0);
+//glEnable(GL_LIGHT1);
+glEnable(GL_LIGHT2);
+   /*turn lighting on */
+glEnable(GL_LIGHTING) ;
+ 
+ 
+//************************************************************************************8//
+
+GLfloat t[] = {10};
+
+Display(t,1);
+
+//// creating shadow for point source
+//msh[7] = -1/light0pos[1];
+//glTranslatef(light0pos[0],light0pos[1],light0pos[2]);
+//glMultMatrixf(msh);
+//glTranslatef(-light0pos[0],-light0pos[1],-light0pos[2]);
+//Display(t,0);
+
+//// creating shadow for spot source
+//glMatrixMode(GL_PROJECTION);
+//glPushMatrix();
+//glLoadIdentity();
+///* view scene in perspective */
+//gluPerspective(5,1, 0.1, 500);
+///* prepare to work with model again */
+//glMatrixMode(GL_MODELVIEW);
+//glLoadIdentity();
+//		
+//msh[7] = -1/light0pos[1];
+//glTranslatef(light1pos[0],light1pos[1],light1pos[2]);
+//glMultMatrixf(msh);
+//glTranslatef(-light1pos[0],-light1pos[1],-light1pos[2]);
+//Display(t,0);
+//glMatrixMode(GL_PROJECTION);
+//glPopMatrix();
+//glMatrixMode(GL_MODELVIEW);
+
+
+//creating shadow for directional source
+	
+	glPushMatrix();
+	
+	//msh[15] = -1/light2pos[1];
+	msh[7] = -1;
+	msh[5]=0;
+	//msh[15] = 1;
+	//glTranslatef(light2pos[0],light2pos[1],light2pos[2]);
+	glMultMatrixf(msh);
+	//glTranslatef(-light2pos[0],-light2pos[1],-light2pos[2]);
+	Display(t,0);
+	
+	glPopMatrix();
+	//msh[15] = 0;
+	msh[5] = 1;
+
+
+glDisable(GL_LIGHT0);
+glDisable(GL_LIGHT1);
+glDisable(GL_LIGHT2);
+
+   /*turn lighting on */
+glDisable(GL_LIGHTING) ;
+
+}
+
 
 void init_ai(){
 	
