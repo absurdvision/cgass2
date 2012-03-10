@@ -7,6 +7,13 @@
 
 extern double poly_d;
 
+extern GLfloat light0pos[];
+extern GLfloat light1pos[];
+extern GLfloat light2pos[];
+extern GLfloat spotangle;
+
+extern GLfloat colshad[];
+extern GLfloat msh[];
 
 typedef struct Vertex {
   float x, y, z;
@@ -153,13 +160,52 @@ ReadOffFile(const char *filename)
 }
 
 
+void config_shadow(float ground[],float light[]){
+	
+	
+    float  dot;
+    float  shadowMat[4][4];
+
+    dot = ground[0] * light[0] +
+          ground[1] * light[1] +
+          ground[2] * light[2] +
+          ground[3] * light[3];
+    
+    shadowMat[0][0] = dot - light[0] * ground[0];
+    shadowMat[1][0] = 0.0 - light[0] * ground[1];
+    shadowMat[2][0] = 0.0 - light[0] * ground[2];
+    shadowMat[3][0] = 0.0 - light[0] * ground[3];
+    
+    shadowMat[0][1] = 0.0 - light[1] * ground[0];
+    shadowMat[1][1] = dot - light[1] * ground[1];
+    shadowMat[2][1] = 0.0 - light[1] * ground[2];
+    shadowMat[3][1] = 0.0 - light[1] * ground[3];
+    
+    shadowMat[0][2] = 0.0 - light[2] * ground[0];
+    shadowMat[1][2] = 0.0 - light[2] * ground[1];
+    shadowMat[2][2] = dot - light[2] * ground[2];
+    shadowMat[3][2] = 0.0 - light[2] * ground[3];
+    
+    shadowMat[0][3] = 0.0 - light[3] * ground[0];
+    shadowMat[1][3] = 0.0 - light[3] * ground[1];
+    shadowMat[2][3] = 0.0 - light[3] * ground[2];
+    shadowMat[3][3] = dot - light[3] * ground[3];
+    
+    int i,j;
+	for(i=0;i<4;i++)
+		for(j=0;j<4;j++)msh[i*4+j] = shadowMat[i][j];
+	
+//	colshad[1]=0;
+//	colshad[2]=0;
+//	colshad[3]=0;
+//	colshad[4]=1;
+//	
+		
+}
 
 
 
-
-double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta){
-
-
+double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta,float *x,int n){
 
   int i;
   double height=0;
@@ -168,28 +214,13 @@ double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,d
   double miny=10000;
   double maxx=0,minx=100000,minz=10000,maxz=0;
   
+  if(!n) glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
+  
   glPushMatrix();
   glTranslatef(xtrans,ytrans,ztrans);
   glRotatef(theta, 0, 1, 0);
   
-  
- for (int i = 0; i < mesh->nfaces; i++) {
-    Face& face = mesh->faces[i]; 
-
-    for (int j = 0; j < face.nverts; j++) {
-     Vertex *vert = face.verts[j];
-		
-      if(maxz<vert->z/scale)maxz = vert->z/scale;
-      if(minz>vert->z/scale)minz = vert->z/scale;
-      
-      if(minx > vert->x/scale)minx = vert->x/scale;
-      if(maxx < vert->x/scale)maxx = vert->z/scale;
-      
-      if(miny > vert->y/scale)miny = vert->y/scale;  
-    }
-  }
-	
-	glTranslatef(-(minx+maxx)/2,-miny,-(minz+maxz)/2);
+ 
 	    
 	    
 	     
@@ -203,7 +234,12 @@ glBegin(GL_TRIANGLES);
     glNormal3fv(face.normal);
     for (int j = 0; j < face.nverts; j++) {
      Vertex *vert = face.verts[j];
-     
+		
+	//enable this for per vertex coloring	
+	//float d = sqrt(vert->x/scale*vert->x/scale+vert->y/scale*vert->y/scale+vert->z/scale*vert->z/scale);
+	//float vcolor[] = { vert->x/(scale*d), vert->y/(scale*d), vert->z/(scale*d), 1.0f };
+	//glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, vcolor);
+
     glVertex3f(vert->x/scale, vert->y/scale, vert->z/scale);
      
     }

@@ -2,7 +2,7 @@
 extern GLuint m_texname[1];
 
 float barcolor[] = { 0.1f, 0.05f, 0.05, 1.0f };
-float roadcolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+float roadcolor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 float grasscolor[] = { 0.1f, 0.3f, 0.1f, 1.0f };
 float blackchaircolor[] = { 0.1f, 0.1f, 0.1f, 1.0f };
 float bluechaircolor[] = { 0.0f, 0.0f, 0.1f, 1.0f };
@@ -10,40 +10,78 @@ float Treecolor[] =  { 0.1f, 0.3f, 0.1f, 1.0f };
 float wallcolor[] =  { 0.3f, 0.35f, 0.3f, 1.0f };
 
 
+
+GLfloat verts_t_b[24] = {-0.5*0.1,0*6,-0.5*0.1,
+				0.5*0.1,0*6,-0.5*0.1,
+				0.5*0.1,0*6,0.5*0.1,
+				-0.5*0.1,0*6,0.5*0.1,
+				-0.5*0.1,0.5*6,-0.5*0.1,
+				0.5*0.1,0.5*6,-0.5*0.1,
+				0.5*0.1,0.5*6,0.5*0.1,
+				-0.5*0.1,0.5*6,0.5*0.1};
+			 	
+GLfloat norms_b[24] = {	1,1,1,
+			1,0,1,
+			1,1,0,
+			1,0,1,
+			0,0,1,
+			1,0,0,
+			1,1,1,
+			1,1,1};
+			
+GLubyte indices_t_b[24]  ={0,1,5,4
+			,1,2,6,5
+			,2,3,7,6
+			,7,3,0,4
+			,1,0,3,2
+			,4,5,6,7}; 
+
+				
+
+
+void make_a_tile(GLfloat x,GLfloat y,GLfloat xx,GLfloat yy,GLfloat d){
+	int i,j;
+	
+	
+	for(i=x;i<xx;i+=1)
+	for(j=x;j<yy;j+=1)
+	{
+		glVertex3f(i,d,j);
+		glVertex3f(i,d,j+1);
+		glVertex3f(i+1,d,j+1);
+		glVertex3f(i+1,d,j);
+	}
+	
+	/* using vertex arrays
+	*/
+
+}
+
+
+void make_a_tex_tile(GLfloat x,GLfloat y,GLfloat xx,GLfloat yy){
+	
+	int i,j;
+	for(i=x;i<xx;i+=1)
+	for(j=x;j<yy;j+=1)
+	{
+		glTexCoord2f(0.0, 0.0);glVertex3f(i,-0.01,j);
+		glTexCoord2f(0.0, 1.0);glVertex3f(i,-0.01,j+1);
+		glTexCoord2f(1.0, 1.0);glVertex3f(i+1,-0.01,j+1);
+		glTexCoord2f(1.0, 0.0);glVertex3f(i+1,-0.01,j);
+	}
+
+}
+
+
+
 void bar(double sy){
 
-double sx  =0.1;
-double sz = 0.1;
-	GLfloat verts_t[24] = {-0.5*sx,0*sy,-0.5*sz,
-				0.5*sx,0*sy,-0.5*sz,
-				0.5*sx,0*sy,0.5*sz,
-				-0.5*sx,0*sy,0.5*sz,
-				-0.5*sx,0.5*sy,-0.5*sz,
-				0.5*sx,0.5*sy,-0.5*sz,
-				0.5*sx,0.5*sy,0.5*sz,
-				-0.5*sx,0.5*sy,0.5*sz};
-			 	
-	GLfloat norms[24] = {	1,1,1,
-				1,0,1,
-				1,1,0,
-				1,0,1,
-				0,0,1,
-				1,0,0,
-				1,1,1,
-				1,1,1};
 	
-	glVertexPointer(3,GL_FLOAT,0,verts_t);
-	glNormalPointer(GL_FLOAT,0,norms);
-		
-		 	 
-	GLubyte indices_t[24]  = {0,1,5,4
-				,1,2,6,5
-				,2,3,7,6
-				,7,3,0,4
-				,1,0,3,2
-				,4,5,6,7}; 	
+	
+	glVertexPointer(3,GL_FLOAT,0,verts_t_b);
+	glNormalPointer(GL_FLOAT,0,norms_b);
 
-	glDrawElements(GL_QUADS,24,GL_UNSIGNED_BYTE,indices_t);
+	glDrawElements(GL_QUADS,24,GL_UNSIGNED_BYTE,indices_t_b);
 
 		
 }
@@ -64,11 +102,27 @@ if(n){
 	glBegin(GL_QUADS);       
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grasscolor);
 	
-	glNormal3f(0, 1, 0);								//making the area inside cage
-	glVertex3f(-8,-0.01,-8);
-	glVertex3f(-8,-0.01,8);
-	glVertex3f(8,-0.01,8);
-	glVertex3f(8,-0.01,-8);
+	glNormal3f(0, 1, 0);	
+	make_a_tile(-8,-8,8,8,-0.01);							//making the area inside cage
+//	int i,j;
+//	for(i=-8;i<0;i+=1)
+//	for(j=-8;j<0;j+=1)
+//	{
+//		glVertex3f(i,-0.01,j);
+//		glVertex3f(i,-0.01,j+1);
+//		glVertex3f(i+1,-0.01,j+1);
+//		glVertex3f(i+1,-0.01,j);
+//	}
+//	glVertex3f(-8,-0.01,-8);
+//	glVertex3f(-6,-0.01,-8);
+//	glvertex3f(-6,-0.01,-6);
+//	glvertex3f(-8,-0.01,-6);
+//	
+//	
+//	
+//	glVertex3f(-8,-0.01,8);
+//	glVertex3f(8,-0.01,8);
+//	glVertex3f(8,-0.01,-8);
 	glEnd();
 	}
 	
@@ -82,6 +136,9 @@ if(n){
 		
 	glBegin(GL_QUADS);										//makinh the border of the cage	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, roadcolor);
+	
+	//make_a_tex_tile(-10,-10,-8,10);
+	
 	glTexCoord2f(0.0, 0.0);glVertex3f(-10,-0.01,-10);	
 	glTexCoord2f(0.0, 100.0);glVertex3f(-10,-0.01,10);		
 	glTexCoord2f(5.0, 100.0);glVertex3f(-8,-0.01,10);
@@ -109,7 +166,8 @@ if(n){
         }
 	
 	if(rail){	
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, barcolor);
+	if(n)glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, barcolor);
+	else glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, colshad);
 	int i,j;
 	GLUquadricObj *quadric;
 	quadric = gluNewQuadric();
@@ -439,12 +497,13 @@ void create_background(Mesh *Tree,Mesh *Chairblack,Mesh *Chairblue,GLfloat *c,in
 if(n){	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, grasscolor);
 
-	glBegin(GL_POLYGON);	//generating the ground 
+	glBegin(GL_QUADS);	//generating the ground 
 	glNormal3f(0, 1, 0);
-	glVertex3f(-5000,-0.1,-5000);
-	glVertex3f(-5000, -0.1,5000);
-	glVertex3f(5000, -0.1,5000);
-	glVertex3f(5000, -0.1,-5000);
+	make_a_tile(-100,-100,20,20,-0.1);
+//	glVertex3f(-5000,-0.1,-5000);
+//	glVertex3f(-5000, -0.1,5000);
+//	glVertex3f(5000, -0.1,5000);
+//	glVertex3f(5000, -0.1,-5000);
 	glEnd();
 }
 	make_wall(n);

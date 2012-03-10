@@ -2,8 +2,9 @@
  * will gnerate tiles of size 20*20 
  */
 
-
-
+float ground[4] = {0 ,1,0,0};
+float curt =0,last=0;
+int lst_cmpile =0;
 
 
 extern double poly_d;
@@ -17,14 +18,19 @@ extern double poly_d;
 #include "models.cpp"
 #include "textureutils.cpp"
 
+#define LST_ORG 1
+#define LST_SH0 2
+#define LST_SH1 3
+#define LST_SH2 4
+
 #ifndef PI
 #define PI 3.14159265358979323846f
 #endif
 
 GLfloat msh[16];
-GLfloat colshad[4];
+ GLfloat colshad[] = {0,0,0,0.7};
 
-
+int w_state = 0;
 
 float Humcolor[] = { 0.7f, 0.5f, 0.5f, 1.0f };
 float Dinocolor[] = { 0.5f, 0.5f, 0.1f, 1.0f };
@@ -95,27 +101,14 @@ image *road_tex;
 
 
 void Display(GLfloat *c,int n){	
-
-if(n){
-	glEnable(GL_TEXTURE_2D);
-	glGenTextures(1, &m_texname[0]);
-	
-        glBindTexture(GL_TEXTURE_2D, m_texname[0]);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_REPLACE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
-    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT);
-    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA,road_tex->height,road_tex->width, 0, GL_RGBA,
-	GL_UNSIGNED_BYTE,road_tex->data);
-	glDisable(GL_TEXTURE_2D);
-}	
-	
-			
 	
 	create_background(Tree,Chairblack,Chairblue,c,n);
 
+	
+	
+}	
+void hum(GLfloat *c,int n){
+	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, Dinocolor);
 	mesh_gen(A[1],0.1,-30+Ax[1],0,-10+Az[1],Atheta[1]*Atmode[1],c,n );		//dino
 	
@@ -126,7 +119,7 @@ if(n){
 	mesh_gen(A[2],0.05,-10+Ax[0],0,-30+Az[0],Atheta[0]*Atmode[0],c,n );	
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, offcolor);
-	mesh_gen(Office,0.035,-31,0,-30,0,c,n );									//office
+	mesh_gen(Office,0.035,-37,0,-36,0,c,n );									//office
 	
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, A0color);
 	mesh_gen(A[3],0.1,-70+Ax[3],0,-30+Az[3],Atheta[3]*Atmode[3],c,n );	
@@ -139,8 +132,7 @@ if(n){
 		
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, A0color);
 	mesh_gen(A[0],0.4,-70+Ax[3],0,-50+Az[3],Atheta[3]*Atmode[3],c,n );	
-	
-	
+		
 	
 	for(int i=0;i<10;i++){
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,Humcolor);
@@ -200,86 +192,247 @@ void load_files(){
 		
 	}
 	
+
+void disp_lst_make()
+{
+	glNewList(LST_ORG, GL_COMPILE);
+	GLfloat t[] = {10};
+	Display(t,1);
+	glEndList();
 	
+	glNewList(LST_SH0, GL_COMPILE);
+	glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	config_shadow(ground,light0pos);
+	glMatrixMode(GL_MODELVIEW);		
+	glPushMatrix();
+	glTranslatef(0,0.01,0);
+	glMultMatrixf(msh);
+	Display(t,0);
+	glMatrixMode(GL_MODELVIEW);		
+	glPopMatrix();
+	glDisable (GL_BLEND);
+	
+	glEndList();
+	
+	glNewList(LST_SH1, GL_COMPILE);
+	glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	config_shadow(ground,light1pos);
+	glMatrixMode(GL_MODELVIEW);		
+	glPushMatrix();
+	glTranslatef(0,0.01,0);
+	glMultMatrixf(msh);
+	Display(t,0);
+	glMatrixMode(GL_MODELVIEW);		
+	glPopMatrix();
+	glDisable (GL_BLEND);
+	glEndList();
+	
+	glNewList(LST_SH2, GL_COMPILE);
+	glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	config_shadow(ground,light2pos);
+	glMatrixMode(GL_MODELVIEW);		
+	glPushMatrix();
+	glTranslatef(0,0.01,0);
+	glMultMatrixf(msh);
+	Display(t,0);
+	glMatrixMode(GL_MODELVIEW);		
+	glPopMatrix();
+	glDisable (GL_BLEND);
+	glEndList();	
+}
+void call_disp_list(){
+
+glCallList(LST_ORG );
+glCallList(LST_SH0);
+glCallList(LST_SH1);
+glCallList(LST_SH2);
+
+
+}
+void walkthrough(GLfloat p2lf[],GLfloat p2lt[])
+{	
+
+
+switch(w_state){
+
+case 0:	if(p2lf[1]>1){
+
+	p2lt[1] -=0.1;
+	p2lf[1] -=0.1;
+	
+	}
+	else w_state = 1;
+	break;
+	
+case 1:if(p2lf[2] > -18){
+
+	p2lf[2] -= 0.05;
+	p2lt[0] -= 10;
+	p2lt[2] += 10;
+	
+	}
+	else w_state = 2;
+	break;
+
+case 2:if(p2lf[0] > -10){
+
+	p2lf[0] -=0.05;
+	
+		if(p2lt[0]<0){
+		p2lt[0] += 20;
+		p2lt[2] -= 10;
+		p2lt[1]+= 1;
+		}
+	}
+	else w_state = 3;
+	break;
+	
+case 3:if(p2lf[0] > -20){
+
+	//p2lf[2] -= 0.05;
+	p2lf[0] -=0.05;
+	
+		if(p2lt[0]<10000){
+		p2lt[0] -= 20;
+		p2lt[2] -= 10;
+		//p2lt[1]+= 1;
+		}
+	}
+	else w_state = 4;
+	break;
+
+case 4:if(p2lt[1] < 3000){
+
+	p2lt[1] +=10;
+	}
+	else w_state = 5;
+	break;
+
+
+case 5:if(p2lt[1] > 1){
+
+	p2lt[1] -=10;
+	p2lt[0] -=20;
+	}
+	else w_state = 6;
+	break;
+
+case 6:if(p2lf[2] >-40){
+	
+	p2lf[2] -=0.1;
+	if(p2lt[0]<=100)p2lt[0] += 100;	
+	else if(p2lt[0]<=-50)p2lt[0] += 10;
+		
+	}
+	else w_state = 7;
+	break;
+
+case 7:if(p2lf[0] >-40){
+	
+	p2lf[0] -=0.1;
+	if(p2lt[0]>=-1000)p2lt[0] += 100;	
+	else if(p2lt[0]>=-5000)p2lt[0] += 1;	
+	}
+	else w_state = 8;
+	break;
+
+case 8:if(p2lf[2] <0){
+	
+	p2lf[2] +=0.1;
+	if(p2lt[2]<0)p2lt[2]*=-1;
+	//if(p2lt[0]>=-1000)
+	p2lt[0] -= 100;	
+	//else if(p2lt[0]>=5000)p2lt[0] -= 100;	
+	}
+	else w_state = 9;
+	break;
+	
+}
+}
+
 void disp()
 {
-
-glLightfv(GL_LIGHT0, GL_POSITION, light0pos);
-  
-glLightfv(GL_LIGHT1, GL_POSITION, light1pos);
-
-glLightfv(GL_LIGHT2, GL_POSITION, light2pos);
-
-
- 
-glLightf(GL_LIGHT1,GL_SPOT_CUTOFF, spotangle);
-  
-glLightf(GL_LIGHT1,GL_SPOT_EXPONENT, 1.f);
-
-//glEnable(GL_LIGHT0);
-//glEnable(GL_LIGHT1);
-glEnable(GL_LIGHT2);
-   /*turn lighting on */
-glEnable(GL_LIGHTING) ;
- 
- 
 //************************************************************************************8//
+
+glEnable(GL_TEXTURE_2D);
+	glGenTextures(1, &m_texname[0]);
+	
+        glBindTexture(GL_TEXTURE_2D, m_texname[0]);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,GL_MODULATE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,GL_REPEAT);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,GL_REPEAT);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_NEAREST);
+    	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+//	glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA,road_tex->height,road_tex->width, 0, GL_RGBA,
+//	GL_UNSIGNED_BYTE,road_tex->data);
+	gluBuild2DMipmaps(GL_TEXTURE_2D,GL_RGBA,road_tex->height,road_tex->width,GL_RGBA,GL_UNSIGNED_BYTE,road_tex->data);
+glDisable(GL_TEXTURE_2D);
 
 GLfloat t[] = {10};
 
-Display(t,1);
+if(!lst_cmpile){
+ disp_lst_make();
+ lst_cmpile =1;
+ }
+ 
+glPushMatrix(); 
+call_disp_list();
+glPopMatrix();
 
-//// creating shadow for point source
-//msh[7] = -1/light0pos[1];
-//glTranslatef(light0pos[0],light0pos[1],light0pos[2]);
-//glMultMatrixf(msh);
-//glTranslatef(-light0pos[0],-light0pos[1],-light0pos[2]);
-//Display(t,0);
+//Display(t,1);
 
-//// creating shadow for spot source
-//glMatrixMode(GL_PROJECTION);
-//glPushMatrix();
-//glLoadIdentity();
-///* view scene in perspective */
-//gluPerspective(5,1, 0.1, 500);
-///* prepare to work with model again */
-//glMatrixMode(GL_MODELVIEW);
-//glLoadIdentity();
-//		
-//msh[7] = -1/light0pos[1];
-//glTranslatef(light1pos[0],light1pos[1],light1pos[2]);
-//glMultMatrixf(msh);
-//glTranslatef(-light1pos[0],-light1pos[1],-light1pos[2]);
-//Display(t,0);
-//glMatrixMode(GL_PROJECTION);
-//glPopMatrix();
-//glMatrixMode(GL_MODELVIEW);
+hum(t,1);
+walkthrough(p2lf,p2lt);
 
 
+glEnable (GL_BLEND); glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //creating shadow for directional source
-	
-	glPushMatrix();
-	
-	//msh[15] = -1/light2pos[1];
-	msh[7] = -1;
-	msh[5]=0;
-	//msh[15] = 1;
-	//glTranslatef(light2pos[0],light2pos[1],light2pos[2]);
-	glMultMatrixf(msh);
-	//glTranslatef(-light2pos[0],-light2pos[1],-light2pos[2]);
-	Display(t,0);
-	
-	glPopMatrix();
-	//msh[15] = 0;
-	msh[5] = 1;
+if(lig0){
+config_shadow(ground,light0pos);
+glMatrixMode(GL_MODELVIEW);		
+glPushMatrix();
+glTranslatef(0,0.01,0);
+glMultMatrixf(msh);
+//Display(t,0);
+hum(t,0);
+glMatrixMode(GL_MODELVIEW);		
+glPopMatrix();
+}
 
+if(lig1){
+//creating shadow for directional source
+config_shadow(ground,light1pos);
 
-glDisable(GL_LIGHT0);
-glDisable(GL_LIGHT1);
-glDisable(GL_LIGHT2);
+glMatrixMode(GL_MODELVIEW);		
+glPushMatrix();
+glTranslatef(0,0.01,0);
+glMultMatrixf(msh);
+//Display(t,0);
+hum(t,0);
+glMatrixMode(GL_MODELVIEW);		
+glPopMatrix();
+}
 
-   /*turn lighting on */
-glDisable(GL_LIGHTING) ;
+if(lig2){
+//creating shadow for directional source
+config_shadow(ground,light2pos);
+
+glMatrixMode(GL_MODELVIEW);		
+glPushMatrix();
+glTranslatef(0,0.01,0);
+glMultMatrixf(msh);
+//Display(t,0);
+hum(t,0);
+glMatrixMode(GL_MODELVIEW);		
+glPopMatrix();
+}
+glDisable (GL_BLEND);
+
+//glDisable(GL_LIGHT0);
+//glDisable(GL_LIGHT1);
+//glDisable(GL_LIGHT2);
+//glDisable(GL_LIGHTING) ;
 
 }
 
@@ -389,7 +542,8 @@ void init_ai(){
   ellip_b[1] = -50;
   ellip_b[2] = -30;
   
-  int_shadow();
+  //int_shadow();
+  //disp_lst_make();
   
 
 	
@@ -520,9 +674,41 @@ if(switch_theta == 40000)Atmode[3] *= -1;
 	
 	
 }
+
+
+void up_walk()
+{
+switch(w_state){
+		
+	case 1: pos_1[1] +=0.1;
+		if(pos_1[1] > 8) w_state = 2;
+		break;
+		
+	case 2:	pos_1[2] +=0.1;
+		if(pos_1[2] > 20) w_state = 3;
+		break;
+	}
+}
+
+void walkt()
+{
+	
+	switch(w_state){
+	
+	case 2: glTranslatef(0,0,pos_1[2]);
+	case 1 : glTranslatef(0,pos_1[1],0);
+	}
+}
 	
 void Animate(){
 	
 	ai_move();
 	switch_theta++;
+	
+	//	up_walk();
+	
 }
+
+
+
+

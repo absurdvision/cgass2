@@ -183,7 +183,7 @@ ReadOffFile(const char *filename)
         
         }
       }
-     //for(int i=0;i<nverts;i++)mesh->norms[i] /=normcnt[i];
+     //for(int i=0;i<nverts;i++)mesh->norms[i] =normcnt[i];
     
 //     GLfloat mx,my,mz,max,may,maz;	
 //     my=mx=mz=100000;
@@ -205,10 +205,10 @@ ReadOffFile(const char *filename)
 //	mesh->bbox[3] = max;  
 //	mesh->bbox[4] = may;
 //	mesh->bbox[5] = maz; 
-   												/// have to setup the normalization of normals
-      
-      //free(normcnt);
-      free(vt);
+//   												//have to setup the normalization of normals
+//      
+//      //free(normcnt);
+//      free(vt);
     }
     else {
 
@@ -230,29 +230,59 @@ ReadOffFile(const char *filename)
  
 }
 
-void int_shadow(){
+void config_shadow(float ground[],float light[]){
 	
 	
-	int i;
-	for(i=0;i<15;i++)msh[i] = 0.0;
-	msh[0]=msh[5]=msh[10]=1.0;
+    float  dot;
+    float  shadowMat[4][4];
+
+    dot = ground[0] * light[0] +
+          ground[1] * light[1] +
+          ground[2] * light[2] +
+          ground[3] * light[3];
+    
+    shadowMat[0][0] = dot - light[0] * ground[0];
+    shadowMat[1][0] = 0.0 - light[0] * ground[1];
+    shadowMat[2][0] = 0.0 - light[0] * ground[2];
+    shadowMat[3][0] = 0.0 - light[0] * ground[3];
+    
+    shadowMat[0][1] = 0.0 - light[1] * ground[0];
+    shadowMat[1][1] = dot - light[1] * ground[1];
+    shadowMat[2][1] = 0.0 - light[1] * ground[2];
+    shadowMat[3][1] = 0.0 - light[1] * ground[3];
+    
+    shadowMat[0][2] = 0.0 - light[2] * ground[0];
+    shadowMat[1][2] = 0.0 - light[2] * ground[1];
+    shadowMat[2][2] = dot - light[2] * ground[2];
+    shadowMat[3][2] = 0.0 - light[2] * ground[3];
+    
+    shadowMat[0][3] = 0.0 - light[3] * ground[0];
+    shadowMat[1][3] = 0.0 - light[3] * ground[1];
+    shadowMat[2][3] = 0.0 - light[3] * ground[2];
+    shadowMat[3][3] = dot - light[3] * ground[3];
+    
+    int i,j;
+	for(i=0;i<4;i++)
+		for(j=0;j<4;j++)msh[i*4+j] = shadowMat[i][j];
 	
-	
-	colshad[1]=0;
-	colshad[2]=0;
-	colshad[3]=0;
-	colshad[4]=1;
-	
+//	colshad[1]=0;
+//	colshad[2]=0;
+//	colshad[3]=0;
+//	colshad[4]=1;
+//	
 		
 }
 
+
+
 double mesh_gen(Mesh *mesh,float scale,float xtrans,float ytrans, float ztrans,double theta,float *x,int n){
 
-  int i;
+  int i,out=1;
   double height=0;
   scale  *= 2;
   scale = 1/scale;
-  
+
+	
 if(!n) glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
 
   glPushMatrix();
@@ -260,7 +290,7 @@ if(!n) glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
   glRotatef(theta, 0, 1, 0);
   glScalef(scale,scale,scale);
   
-  //glTranslatef(0,-mesh->bbox[1],0);
+//  glTranslatef(0,-mesh->bbox[1],0);
   glVertexPointer(3,GL_FLOAT,0,mesh->vertx);
   glNormalPointer(GL_FLOAT,0,mesh->norms);	   
   glDrawElements(GL_TRIANGLES,mesh->indx_cnt,
@@ -335,5 +365,9 @@ if(!n) glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE,&colshad[0]);
  return(1);
  
  }
+// 
+ 
+
+
 
 
